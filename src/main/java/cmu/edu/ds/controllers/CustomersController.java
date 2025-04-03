@@ -32,8 +32,8 @@ public class CustomersController {
         } catch (CustomFeignException e) {
             try {
                 // Convert the response body to the appropriate format
-//                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
+                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
+//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
                 return ResponseEntity.status(e.getStatus()).body(responseBody);
             } catch (IOException ioException) {
                 // Fallback if we can't read the response body
@@ -57,8 +57,8 @@ public class CustomersController {
             return ResponseEntity.ok(result);
         } catch (CustomFeignException e) {
             try {
-//                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
+                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
+//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
                 return ResponseEntity.status(e.getStatus()).body(responseBody);
             } catch (IOException ioException) {
                 return ResponseEntity.status(e.getStatus()).build();
@@ -73,8 +73,8 @@ public class CustomersController {
             return ResponseEntity.ok(result);
         } catch (CustomFeignException e) {
             try {
-//                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
+                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
+//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
                 return ResponseEntity.status(e.getStatus()).body(responseBody);
             } catch (IOException ioException) {
                 return ResponseEntity.status(e.getStatus()).build();
