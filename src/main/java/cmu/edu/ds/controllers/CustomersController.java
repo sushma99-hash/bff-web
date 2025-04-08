@@ -1,20 +1,13 @@
-package cmu.edu.ds.controllers;//package controllers;
+package cmu.edu.ds.controllers;
 
-//import client.CustomersClient;
-//import errors.CustomFeignException;
 import cmu.edu.ds.Models.Customer;
 import cmu.edu.ds.client.CustomersClient;
 import cmu.edu.ds.errors.CustomFeignException;
 import jakarta.validation.constraints.Email;
-//import models.Customer;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-// Controller for Customers endpoints
 @RestController
 @RequestMapping("/customers")
 public class CustomersController {
@@ -30,25 +23,11 @@ public class CustomersController {
             Object result = customersClient.addCustomer(customer);
             return ResponseEntity.ok(result);
         } catch (CustomFeignException e) {
-            try {
-                // Convert the response body to the appropriate format
-                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
-                return ResponseEntity.status(e.getStatus()).body(responseBody);
-            } catch (IOException ioException) {
-                // Fallback if we can't read the response body
-                return ResponseEntity.status(e.getStatus()).build();
-            }
+            return ResponseEntity.status(e.getStatus())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(e.getResponseBody());
         }
     }
-
-//        @GetMapping
-//        public ResponseEntity<Object> getCustomers(@RequestParam(required = false) String userId) {
-//            if (userId != null) {
-//                return ResponseEntity.ok(customersClient.getCustomerByUserId(userId));
-//            }
-//            return ResponseEntity.ok(customersClient.getAllCustomers());
-//        }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCustomerById(@PathVariable String id) {
@@ -56,13 +35,9 @@ public class CustomersController {
             Object result = customersClient.getCustomerById(id);
             return ResponseEntity.ok(result);
         } catch (CustomFeignException e) {
-            try {
-                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
-                return ResponseEntity.status(e.getStatus()).body(responseBody);
-            } catch (IOException ioException) {
-                return ResponseEntity.status(e.getStatus()).build();
-            }
+            return ResponseEntity.status(e.getStatus())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(e.getResponseBody());
         }
     }
 
@@ -72,14 +47,9 @@ public class CustomersController {
             Object result = customersClient.getCustomerByUserId(userId);
             return ResponseEntity.ok(result);
         } catch (CustomFeignException e) {
-            try {
-                String responseBody = StreamUtils.copyToString(e.getBody().asInputStream(), StandardCharsets.UTF_8);
-//                String responseBody = StreamUtils.copyToString(e.getResponseBody(), StandardCharsets.UTF_8);
-                return ResponseEntity.status(e.getStatus()).body(responseBody);
-            } catch (IOException ioException) {
-                return ResponseEntity.status(e.getStatus()).build();
-            }
+            return ResponseEntity.status(e.getStatus())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(e.getResponseBody());
         }
     }
 }
-
