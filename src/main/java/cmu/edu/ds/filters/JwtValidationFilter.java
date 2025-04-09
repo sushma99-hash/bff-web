@@ -17,42 +17,36 @@ import java.util.List;
 
 @Component
 public class JwtValidationFilter extends OncePerRequestFilter {
+
     private static final List<String> VALID_SUBJECTS = Arrays.asList("starlord", "gamora", "drax", "rocket", "groot");
+    private static final String VALID_CLIENT_TYPE = "web";
     private static final String VALID_ISSUER = "cmu.edu";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Skip validation for /status endpoint
         if (request.getRequestURI().equals("/status")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Check Client Type header
+        // Validate X-Client-Type header
         String clientType = request.getHeader("X-Client-Type");
-        if (clientType == null) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Missing required header: X-Client-Type\"}");
+        if (clientType == null || !clientType.equals(VALID_CLIENT_TYPE)) {
+            sendErrorResponse(response, HttpStatus.BAD_REQUEST,
+                    "Missing or invalid X-Client-Type header. Must be: web");
             return;
         }
 
-        if(!clientType.equals("web")){
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Missing required header: X-Client-Type\"}");
-            return;
-        }
-
-        // Check Authorization header
+        // Validate Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Missing or invalid Authorization header\"}");
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED,
+                    "Missing or invalid Authorization header");
             return;
         }
 
@@ -61,28 +55,24 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         try {
             validateJwtToken(token);
         } catch (Exception e) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, e.getMessage());
             return;
         }
 
+        request.setAttribute("clientType", clientType);
         filterChain.doFilter(request, response);
     }
 
     private void validateJwtToken(String token) throws Exception {
         try {
-            // Decode JWT token
             String[] parts = token.split("\\.");
             if (parts.length != 3) {
                 throw new Exception("Invalid token format");
             }
 
-            // Decode payload (second part)
             String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
             JsonNode payloadJson = objectMapper.readTree(payload);
 
-            // Validate token claims
             if (!payloadJson.has("sub") || !VALID_SUBJECTS.contains(payloadJson.get("sub").asText())) {
                 throw new Exception("Invalid subject in token");
             }
@@ -91,14 +81,29 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                 throw new Exception("Invalid issuer in token");
             }
 
-//                if (!payloadJson.has("exp") || payloadJson.get("exp").asLong() < (System.currentTimeMillis() / 1000)) {
-//                    throw new Exception("Token expired");
-//                }
+            if (!payloadJson.has("exp")) {
+                throw new Exception("Missing expiration in token");
+            }
+
+            long exp = payloadJson.get("exp").asLong();
+            long currentTimeSeconds = System.currentTimeMillis() / 1000;
+            if (exp < currentTimeSeconds) {
+                throw new Exception("Token expired");
+            }
 
         } catch (Exception e) {
             throw new Exception("Invalid JWT token: " + e.getMessage());
         }
     }
+
+    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message)
+            throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.getWriter().write(String.format(
+                "{\"error\":\"%s\", \"message\":\"%s\"}",
+                status.getReasonPhrase(),
+                message
+        ));
+    }
 }
-
-
