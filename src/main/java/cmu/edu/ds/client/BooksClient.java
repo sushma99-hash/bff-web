@@ -5,7 +5,7 @@ import cmu.edu.ds.configuration.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "A1", url = "http://internal-bookstore-dev-InternalALB-126543766.us-east-1.elb.amazonaws.com:3000/books", configuration = FeignConfig.class)
+@FeignClient(name = "A1", url = "http://internal-bookstore-dev-InternalALB-1133676349.us-east-1.elb.amazonaws.com:3000/books", configuration = FeignConfig.class)
 //@FeignClient(name = "A1", url = "http://localhost:3000/books", configuration = FeignConfig.class)
 public interface BooksClient {
 
